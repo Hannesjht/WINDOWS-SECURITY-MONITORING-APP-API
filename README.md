@@ -1,5 +1,7 @@
 # AI Security Monitor Portable
 
+https://github.com/Hannesjht/Network-Security-Monitor/releases/edit/untagged-736acf628a3406087d1c        New release
+
 # Build Instructions
 
 1. Prerequisites:
