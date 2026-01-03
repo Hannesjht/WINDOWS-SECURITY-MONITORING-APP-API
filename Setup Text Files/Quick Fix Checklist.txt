@@ -1,0 +1,136 @@
+Quick Fix Checklist:
+
+Run through this checklist:
+
+1. [ ] Is the JAR file in the same directory?
+
+2. [ ] Does the JAR have the correct main class? 
+   Test with: `java -jar ai-security-2.0.0.jar`
+   
+3. [ ] Is Java installed? Test with: `java -version`
+
+4. [ ] Are you using simple JRE version (1.8.0 not 17)?
+
+5. [ ] Are error messages very short (under 50 chars)?
+
+
+Manual GUI Method:
+
+
+If XML keeps failing, use the GUI:
+
+1. Open Launch4j
+
+2. Basic Tab:
+
+   - Output file: `C:\your\path\AI Security Monitor.exe`
+   
+   - Jar: `C:\your\path\ai-security-2.0.0.jar`
+   
+   - ☐ Don't wrap the jar (unchecked)
+   
+   - Header type: `gui`
+
+3. Classpath Tab:
+
+   - Main class: `com.security.Main`
+   
+   - Click "Add" and select your JAR
+
+4. JRE Tab:
+
+   - Min JRE version: `1.8.0`
+   
+   - Max JRE version: (leave empty)
+   
+   - Initial heap size: `256`
+   
+   - Max heap size: `512`
+
+5. Click "Build wrapper"
+
+
+The "Enter free form" error is almost always an XML formatting issue. 
+
+Start with the simplest possible XML (one line, no extra tags) and gradually add features until it breaks, 
+then you'll know what's causing it.
+
+
+1. Understanding JRE Path Options in Launch4j GUI:
+
+In the Launch4j GUI, you have two different fields for JRE:
+
+
+Option 1: "Bundled JRE path":
+
+This is for inside the EXE (embedded JRE):
+
+- Path relative to EXE where JRE is located
+
+- Example: `.\jre` means there's a `jre` folder next to the EXE
+
+- Use this if you're distributing Java with your app
+
+
+Option 2: "JRE paths" (text area below):
+
+This is for external JRE locations (search order):
+
+
+.\jre
+%JAVA_HOME%
+%PATH%
+registry
+```
+
+This searches in order:
+
+1. `.\jre` folder next to EXE
+
+2. `JAVA_HOME` environment variable
+
+3. `PATH` environment variable
+
+4. Windows registry
+
+
+Recommendation: Use this in the text area:
+
+
+.\jre
+%JAVA_HOME%
+registry
+```
+
+
+2. Error Messages in GUI:
+
+To add the XML error messages to the GUI:
+
+1. Go to "Messages" tab in Launch4j GUI
+
+2. Copy these into the fields:
+
+
+Startup error: An error occurred while starting the application.
+
+JRE not found error: Java Runtime Environment not found!
+
+This application requires Java 17 or later.
+
+Please install Java from:
+https://adoptium.net/temurin/releases/
+
+Then restart the application.
+
+
+JRE version error: This application requires Java 17 or later.
+
+Please update your Java installation from:
+https://adoptium.net/temurin/releases/
+
+
+Launcher error: The launcher was unable to create the application.
+
+
+Note: Keep messages shorter than 1024 characters total for all messages combined.

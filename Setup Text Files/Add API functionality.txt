@@ -1,0 +1,85 @@
+Add API functionality:
+
+
+#!/bin/bash
+# run.sh
+
+# Set API keys from config or use environment variables
+export VIRUSTOTAL_API_KEY="your_actual_key_here"
+export ABUSEIPDB_API_KEY="your_actual_key_here"
+
+# Compile and run
+mvn clean compile
+mvn exec:java -Dexec.mainClass="com.security.Main"
+
+
+This completes the API integration with proper configuration management, 
+error handling, caching, and real API calls to VirusTotal and AbuseIPDB.
+
+
+Directory Structure:
+
+AISecurityMonitor/
+├── src/
+│   └── main/
+│       └── java/
+│           └── com/
+│               └── security/
+│                   ├── Main.java
+│                   ├── AISecurityMonitor.java
+│                   ├── models/
+│                   │   ├── ConnectionData.java
+│                   │   └── DeviceInfo.java
+│                   ├── services/
+│                   │   ├── NetworkScannerService.java
+│                   │   ├── ThreatDetectionService.java
+│                   │   ├── FirewallService.java
+│                   │   ├── ml/
+│                   │   │   └── MLThreatDetectionService.java
+│                   │   ├── api/
+│                   │   │   ├── APIIntegrationService.java    
+│                   │   │   ├── VirusTotalAPI.java           
+│                   │   │   └── AbuseIPDBAPI.java           
+│                   │   ├── scanner/
+│                   │   │   └── AdvancedPortScanner.java
+│                   │   └── database/
+│                   │       └── DatabaseService.java
+│                   ├── config/                              
+│                   │   └── APIConfig.java                 
+│                   ├── utils/                              
+│                   │   └── HTTPClient.java                   
+│                   └── gui/
+│                       └── MainWindow.java
+├── pom.xml             └── APISettingsDialog.java
+├── run.bat             └── ScannerSettingsDialog.java  # NEW
+├── run.sh
+└── config.properties
+
+
+
+Steps to Implement:
+
+
+1. Create new directories:
+
+   - `src/main/java/com/security/config/`
+   
+   - `src/main/java/com/security/utils/`
+   
+
+2. Place the files into correct locations
+
+Key Features of This Implementation:
+
+Configuration Management  - Reads from `config.properties`  
+
+Real API Calls            - Connects to VirusTotal and AbuseIPDB  
+
+Error Handling            - Falls back to mock data if APIs fail  
+
+Caching                   - Reduces API calls with 30-minute cache  
+
+Concurrent Execution      - Parallel API calls for speed  
+
+Threat Scoring            - Calculates combined threat score from multiple sources  
+

@@ -1,0 +1,58 @@
+
+END USER LICENSE AGREEMENT
+
+GPLv3-based End User License Agreement (EULA) suitable for your installer:
+
+AI SECURITY SOFTWARE - END USER LICENSE AGREEMENT
+Version 2.0.0
+
+NOTICE: This software is distributed under the GNU General Public License v3.0 (GPLv3).
+
+By installing, copying, or otherwise using this software, you agree to be bound by the terms of the GPLv3.
+
+SUMMARY OF KEY TERMS:
+
+1. FREEDOM TO USE
+   - You are free to use this software for any purpose.
+
+2. FREEDOM TO STUDY
+   - You have access to the complete source code.
+   - Source code is available at: [Your GitHub/Source Repository URL]
+
+3. FREEDOM TO MODIFY
+   - You may modify this software to suit your needs.
+   - Modified versions must also be licensed under GPLv3.
+
+4. FREEDOM TO DISTRIBUTE
+   - You may copy and distribute the original software.
+   - You may distribute your modified versions.
+   - All distributed copies must include:
+     * This license notice
+     * Copyright information
+     * Source code or offer to provide it
+
+5. NO WARRANTY
+   This software is provided "AS IS" without warranty of any kind.
+   The authors are not liable for any damages arising from its use.
+
+6. PATENTS
+   Any patents covering this software are licensed for your use.
+
+7. COMPATIBILITY
+   If you combine this software with other software under different licenses,
+   the combination must comply with GPLv3 requirements.
+
+FULL LICENSE TEXT:
+The complete GNU GPLv3 license text is included in the file "COPYING" or "LICENSE.txt"
+in the installation directory, and is also available at:
+https://www.gnu.org/licenses/gpl-3.0.txt
+
+For source code, documentation, and support, visit:
+[Your Project Website or Repository URL]
+
+ACKNOWLEDGMENT:
+By clicking "I Agree", you confirm that you have read, understood, and agree to be
+bound by the terms of the GNU General Public License v3.0.
+
+
+This software is free and open source, licensed under the GNU General Public License v3.0. You are free to use, study, modify, and distribute this software for any purpose, provided that any distributed copies or modified versions remain under the same GPLv3 license and include the source code. This software comes with ABSOLUTELY NO WARRANTY. For complete license terms, see https://www.gnu.org/licenses/gpl-3.0.txt or the LICENSE file included with this software.

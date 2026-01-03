@@ -1,0 +1,242 @@
+
+Option 1: Extract from JAR (Limited)
+
+JAR files typically don't contain `.java` files, but you can check:
+
+bash
+
+# See what's inside your JAR
+
+jar -tf ai-security-2.0.0.jar
+
+# If you see .java files, extract them:
+
+jar -xf ai-security-2.0.0.jar
+
+find . -name "*.java" -exec cp --parents {} ai-security-2.0.0-src/ \;
+
+
+But most likely your JAR only has `.class` files, not `.java` files.
+
+
+Option 2: Find Your Original Source Files
+
+Option 3: Decompile (Last Resort)
+
+If you've lost your source code, you can decompile the JAR:
+
+bash
+
+
+# Using JD-GUI (Graphical tool)
+
+# Download from: http://java-decompiler.github.io/
+
+# Using CFR decompiler (Command line)
+
+wget https://repo1.maven.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
+
+java -jar cfr-0.152.jar ai-security-2.0.0.jar --outputdir ai-security-2.0.0-src
+
+
+# Using Procyon decompiler
+
+java -jar procyon-decompiler.jar ai-security-2.0.0.jar -o ai-security-2.0.0-src
+
+
+Note: Decompiled code may not be perfect, but satisfies GPL requirements.
+
+
+Correct Step-by-Step for GPL Compliance:
+
+Step 1: Locate or Create Source Files
+
+# Copy ALL source files
+
+mkdir ai-security-2.0.0-src
+
+cp -r /path/to/your/source/code/* ai-security-2.0.0-src/
+
+
+# OR if using decompiler:
+
+mkdir ai-security-2.0.0-src
+
+java -jar cfr-0.152.jar ai-security-2.0.0.jar --outputdir ai-security-2.0.0-src/src
+
+
+Step 2: Include Build Instructions
+
+Create `ai-security-2.0.0-src/BUILD.md`:
+markdown
+
+
+# Building AI Security from Source
+
+## Prerequisites
+
+- Java 17 JDK (not JRE)
+- (Optional) Maven or Gradle
+
+## Method 1: Manual Build
+
+1. Compile:
+bash
+
+javac -d bin -cp "lib/*" src/**/*.java
+
+
+2. Create JAR:
+bash
+
+jar cvfm ai-security-2.0.0.jar MANIFEST.MF -C bin .
+
+
+## Method 2: From Original Source
+
+This distribution contains decompiled source.
+
+For original source, contact: [your-email]
+
+
+Step 3: Create Complete Source Package
+bash
+
+
+# Directory structure
+ai-security-2.0.0-src/
+â”œâ”€â”€ src/                    # Your .java files OR decompiled code
+â”‚   â””â”€â”€ com/yourcompany/aisecurity/
+â”‚       â”œâ”€â”€ Main.java
+â”‚       â””â”€â”€ ...
+â”œâ”€â”€ resources/              # Resource files
+â”‚   â”œâ”€â”€ splash.bmp
+â”‚   â”œâ”€â”€ filename.ico
+â”‚   â””â”€â”€ ...
+â”œâ”€â”€ lib/                    # Dependencies (if any)
+â”‚   â””â”€â”€ *.jar
+â”œâ”€â”€ LICENSE.txt            # Full GPLv3
+â”œâ”€â”€ COPYING               # Same as LICENSE
+â”œâ”€â”€ README.md
+â”œâ”€â”€ BUILD.md              # Build instructions
+â””â”€â”€ CHANGELOG.md
+
+
+# Create the package
+
+zip -r ai-security-2.0.0-src.zip ai-security-2.0.0-src/
+
+
+What If You Really Lost the Source?
+
+If you truly don't have the `.java` files anymore:
+
+1. Use decompiler (as shown above)
+
+2. Be transparent in README:
+
+markdown
+
+   ## Note on Source Code
+   
+   This package contains decompiled source code from the binary distribution.
+   
+   The original source code was inadvertently lost. 
+   
+   This decompiled version is provided to comply with GPLv3 requirements.
+   
+   For questions, contact: [your-email]
+ 
+
+3. Include this in your installer EULA:
+  
+   Source code is available as a decompiled version from the original
+   binary at: [download-link]
+   
+   The decompiled source may not be identical to the original but is
+   functionally equivalent.
+  
+
+Complete Script to Create Source Package:
+bash
+
+
+#!/bin/bash
+# create-source-package.sh
+
+echo "Creating GPL-compliant source package..."
+echo "========================================"
+
+# Create directory
+mkdir -p ai-security-2.0.0-src
+
+# Method 1: If you have original source
+if [ -d "/path/to/original/source" ]; then
+    echo "Copying original source files..."
+    cp -r /path/to/original/source/* ai-security-2.0.0-src/
+    
+# Method 2: Decompile JAR
+else
+    echo "Original source not found. Decompiling JAR..."
+    
+    # Download decompiler if needed
+    if [ ! -f "cfr.jar" ]; then
+        wget -O cfr.jar https://repo1.maven.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
+    fi
+    
+    # Decompile
+    java -jar cfr.jar ai-security-2.0.0.jar --outputdir ai-security-2.0.0-src/src
+    
+    # Copy resources from JAR
+    mkdir -p ai-security-2.0.0-src/resources
+    jar -xf ai-security-2.0.0.jar
+    find . -name "*.bmp" -o -name "*.ico" -o -name "*.png" -o -name "*.properties" | \
+        xargs -I {} cp {} ai-security-2.0.0-src/resources/ 2>/dev/null || true
+fi
+
+# Add required GPL files
+echo "Adding license files..."
+wget -O ai-security-2.0.0-src/LICENSE.txt https://www.gnu.org/licenses/gpl-3.0.txt
+cp ai-security-2.0.0-src/LICENSE.txt ai-security-2.0.0-src/COPYING
+
+# Create README
+cat > ai-security-2.0.0-src/README.md << 'EOF'
+# AI Security v2.0.0 - Source Code
+
+## About
+This is the source code distribution for AI Security v2.0.0
+
+## Build Instructions
+See BUILD.md for compilation instructions.
+
+## License
+GNU General Public License v3.0 - See LICENSE.txt
+
+## Note
+$(if [ ! -d "/path/to/original/source" ]; then 
+echo "This package contains decompiled source code from the binary distribution."
+echo "The original source code files were not available."
+fi)
+EOF
+
+# Create build instructions
+cat > ai-security-2.0.0-src/BUILD.md << 'EOF'
+# Building from Source
+
+## Requirements
+- Java 17 JDK
+
+## Steps
+1. Ensure all .java files are in src/ directory
+2. Compile: `javac -d bin src/**/*.java`
+3. Copy resources: `cp resources/* bin/`
+4. Create JAR: `jar cvfe ai-security-2.0.0.jar com.yourcompany.Main -C bin .`
+EOF
+
+# Create zip
+echo "Creating archive..."
+zip -r ai-security-2.0.0-src.zip ai-security-2.0.0-src/
+
+echo "Done! Source package: ai-security-2.0.0-src.zip"
+echo "Include this in your installer distribution."
+```

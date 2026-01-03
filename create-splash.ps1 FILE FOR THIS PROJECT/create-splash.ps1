@@ -1,0 +1,35 @@
+# Save this as create-splash.ps1 in your Output folder
+Add-Type -AssemblyName System.Drawing
+
+$bitmap = New-Object System.Drawing.Bitmap(640, 480)
+$graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+
+# Background
+$graphics.Clear([System.Drawing.Color]::FromArgb(30, 30, 46))
+
+# Title
+$font = New-Object System.Drawing.Font("Arial", 36, [System.Drawing.FontStyle]::Bold)
+$brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
+$graphics.DrawString("AI-Security-Monitor", $font, $brush, 120, 150)
+
+# Subtitle
+$font2 = New-Object System.Drawing.Font("Arial", 18, [System.Drawing.FontStyle]::Italic)
+$graphics.DrawString("v2.0 - Starting...", $font2, $brush, 235, 220)
+
+# Logo/icon
+$graphics.FillEllipse([System.Drawing.Brushes]::Green, 270, 280, 100, 100)
+$graphics.DrawLine([System.Drawing.Pens]::White, 320, 290, 320, 370)
+$graphics.DrawLine([System.Drawing.Pens]::White, 270, 330, 370, 330)
+$graphics.DrawEllipse([System.Drawing.Pens]::White, 270, 280, 100, 100)
+
+# Copyright
+$font3 = New-Object System.Drawing.Font("Arial", 10)
+$graphics.DrawString("© 2026 NAME EXT", $font3, $brush, 200, 420)
+
+# Save as BMP
+$bitmap.Save("splash.bmp", [System.Drawing.Imaging.ImageFormat]::Bmp)
+$graphics.Dispose()
+$bitmap.Dispose()
+
+Write-Host "✅ Created splash.bmp (640x480)" -ForegroundColor Green
+Get-Item "splash.bmp" | Select-Object Name, Length

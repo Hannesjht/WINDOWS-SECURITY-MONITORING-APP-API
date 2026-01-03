@@ -1,0 +1,1082 @@
+For Windows:
+
+Create and compile the `launcher.exe` file.
+
+Step 1: Install .NET 10.0 SDK
+
+# Download .NET 10.0 from:
+# https://dotnet.microsoft.com/download/dotnet/10.0
+
+# Verify installation
+
+dotnet --version
+
+# Should show: 10.x.x
+
+
+Step 2: Create .NET 10.0 Launcher Project:
+bash
+
+# Create new console project with .NET 10.0
+
+dotnet new console --framework net10.0 --name AISecurityLauncher
+
+cd AISecurityLauncher
+
+
+Step 3: Up AISecurityLauncher.csproj for .NET 10.0"
+
+Save `AISecurityLauncher.csproj`:
+xml
+
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>launcher</AssemblyName>
+  </PropertyGroup>
+
+</Project>
+
+```
+
+
+
+Step 4: Enhanced Launcher Code for .NET 10.0
+
+Save `Program.cs` with this modern .NET 10.0 code:
+csharp
+
+
+
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Threading;
+using System.Windows.Forms;
+
+namespace AISecurityLauncher;
+
+static class Program
+{
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
+        string appDir = Directory.GetCurrentDirectory();
+        string javaPath = Path.Combine(appDir, "jre", "bin", "java.exe");
+        string jarPath = Path.Combine(appDir, "ai-security-2.0.0.jar");
+        string splashPath = Path.Combine(appDir, "splash.bmp");
+
+        // Show splash immediately
+        if (File.Exists(splashPath))
+        {
+            ShowSplashScreen(splashPath);
+        }
+
+        // Launch Java application
+        if (File.Exists(javaPath) && File.Exists(jarPath))
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = javaPath,
+                Arguments = $"-Xms512m -Xmx1024m -jar \"{jarPath}\"",
+                WorkingDirectory = appDir,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+        }
+        else
+        {
+            MessageBox.Show("Required files not found!\nCheck if jre and jar files exist.",
+                          "AI Security Monitor - Error",
+                          MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        // Keep splash visible for 3 seconds
+        Thread.Sleep(3000);
+        Application.Exit();
+    }
+
+    static void ShowSplashScreen(string imagePath)
+    {
+        Form splash = new()
+        {
+            FormBorderStyle = FormBorderStyle.None,
+            StartPosition = FormStartPosition.CenterScreen,
+            TopMost = true,
+            Size = new Size(640, 480),
+            ShowInTaskbar = false
+        };
+
+        if (File.Exists(imagePath))
+        {
+            splash.BackgroundImage = Image.FromFile(imagePath);
+            splash.BackgroundImageLayout = ImageLayout.Stretch;
+        }
+        else
+        {
+            // Fallback splash
+            splash.BackColor = Color.Navy;
+            using var g = splash.CreateGraphics();
+            g.DrawString("AI Security Monitor", 
+                new Font("Arial", 24, FontStyle.Bold), 
+                Brushes.White, new PointF(50, 200));
+        }
+
+        splash.Show();
+        Application.DoEvents();
+    }
+}
+```
+
+
+
+## Step 5: Build Commands for .NET 10.0
+bash
+
+
+# Clean
+
+dotnet clean
+
+# Build for release
+
+dotnet build -c Release -p:Platform="x64"
+
+# Publish as single file (recommended)
+
+dotnet publish -c Release -r win-x64 --self-contained false /p:PublishSingleFile=true
+
+# For smaller size with trimming (if no reflection)
+
+dotnet publish -c Release -r win-x64 --self-contained false /p:PublishSingleFile=true /p:PublishTrimmed=true
+
+# For 32-bit Windows
+
+dotnet publish -c Release -r win-x86 --self-contained false /p:PublishSingleFile=true
+```
+
+
+## Step 6: Final Inno Setup Script (.NET 10.0 Compatible)
+innosetup
+
+
+
+[Setup]
+AppName=AI Security Monitor
+AppVersion=2.0.0
+DefaultDirName={localappdata}\AISecurity
+DisableDirPage=yes
+DisableProgramGroupPage=yes
+DisableWelcomePage=yes
+OutputBaseFilename=AI-Security-Monitor-Setup
+Compression=lzma2/ultra
+SolidCompression=yes
+CreateAppDir=yes
+Uninstallable=yes
+ArchitecturesAllowed=x64 x86
+ArchitecturesInstallIn64BitMode=x64
+
+[Files]
+; .NET 10.0 Launcher
+Source: "launcher.exe"; DestDir: "{app}"; Flags: ignoreversion
+; Java Runtime
+Source: "jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
+; Main Application
+Source: "ai-security-2.0.0.jar"; DestDir: "{app}"; Flags: ignoreversion
+; Optional files
+Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "readme.txt"; DestDir: "{app}"; Flags: ignoreversion
+
+[Icons]
+Name: "{commondesktop}\AI Security Monitor"; Filename: "{app}\launcher.exe"; IconFilename: "{app}\icon.ico"
+Name: "{commonprograms}\AI Security Monitor"; Filename: "{app}\launcher.exe"; IconFilename: "{app}\icon.ico"
+
+[Run]
+Filename: "{app}\launcher.exe"; Description: "Launch AI Security Monitor"; Flags: postinstall nowait skipifsilent
+
+[UninstallRun]
+Filename: "{sys}\taskkill.exe"; Parameters: "/f /im java.exe /t"; Flags: runhidden
+Filename: "{sys}\taskkill.exe"; Parameters: "/f /im javaw.exe /t"; Flags: runhidden
+
+[Code]
+// Check for .NET 10.0 (optional - your launcher is self-contained)
+function InitializeSetup(): Boolean;
+begin
+  // Optional: Add .NET check if needed
+  Result := True;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    // Create a simple configuration file
+    SaveStringToFile(ExpandConstant('{app}\config.ini'),
+      '[Install]' + #13#10 +
+      'Version=2.0.0' + #13#10 +
+      'Path=' + ExpandConstant('{app}') + #13#10 +
+      'Date=' + GetDateTimeString('yyyy/mm/dd', ':', '') + #13#10,
+      False);
+  end;
+end;
+```
+
+
+
+## Step 7: Verify Your .NET 10.0 Environment
+bash
+
+# Check SDKs
+
+dotnet --list-sdks
+
+# Should include: 10.x.x
+
+
+# Check runtimes
+
+dotnet --list-runtimes
+
+# Should include: Microsoft.NETCore.App 10.x.x
+
+
+# Create test project
+
+dotnet new console -n Test10
+
+cd Test10
+
+dotnet run
+
+# Should output: Hello, World!
+```
+
+
+## Benefits of .NET 10.0:
+
+- Current LTS version (supported until 2028)
+- Better performance and optimizations
+- Smaller binaries with improved trimming
+- Native AOT support (can compile to native code)
+- Modern C# features (records, pattern matching, etc.)
+
+
+## Alternative: Use Native AOT for Tiny Launcher
+
+If you want the **smallest possible launcher** (no .NET runtime needed):
+
+```bash
+# Update .csproj
+<PropertyGroup>
+    <PublishAot>true</PublishAot>
+    <StripSymbols>true</StripSymbols>
+</PropertyGroup>
+
+# Build Native AOT (creates ~3MB standalone EXE)
+dotnet publish -c Release -r win-x64
+```
+
+
+.NET 10.0 is the recommended choice - it's supported, modern, and creates efficient launchers. 
+
+Your launcher.exe will work on Windows 10/11 without requiring users to install .NET separately.
+
+
+Output/                   (Where you want final files)
+
+ai-security-2.0.0.jar     (Your Java app)
+
+icon.ico                  (Icon file)
+
+portable.iss              (Inno Setup script)
+
+splash.bmp                (Splash screen)
+```
+
+
+
+## Step 1: Build the Launcher
+
+First, navigate to your C# project folder and build:
+bash
+
+cd AISecurityLauncher
+
+dotnet publish -c Release -r win-x64 --self-contained false /p:PublishSingleFile=true
+
+
+Your launcher.exe will be created at:
+
+AISecurityLauncher\bin\Release\net10.0-windows\win-x64\publish\launcher.exe
+
+
+## Step 2: Prepare Files for Inno Setup:
+
+
+Copy everything to your Output folder:
+bash
+
+# From your root directory (assuming you have PowerShell or Command Prompt open here):
+
+# Create Output folder if it doesn't exist
+
+mkdir Output
+
+# Copy launcher
+
+copy "AISecurityLauncher\bin\Release\net10.0-windows\win-x64\publish\launcher.exe" "Output\"
+
+# Copy JRE
+
+xcopy "jre" "Output\jre\" /E /I
+
+# Copy JAR and other files
+
+copy "ai-security-2.0.0.jar" "Output\"
+
+copy "icon.ico" "Output\"
+
+copy "splash.bmp" "Output\"
+
+copy "portable.iss" "Output\"
+
+```
+
+
+## Step 3: Compile the Installer
+
+1. Install Inno Setup** if you haven't: https://jrsoftware.org/isinfo.php
+
+2. Open Inno Setup Compiler
+
+3. Open your portable.iss file
+
+4. Click Compile (F9)
+
+Your installer will be created as:
+
+Output\AI-Security-Monitor-Portable.exe
+```
+
+Final Structure Should Be:
+
+Root/
+├── AISecurityLauncher/          (C# source code)
+├── jre/                         (Java Runtime)
+├── Output/                      (Final distribution)
+│   ├── AI-Security-Monitor-Portable.exe  (Your installer)
+│   ├── launcher.exe
+│   ├── jre/
+│   ├── ai-security-2.0.0.jar
+│   ├── icon.ico
+│   ├── splash.bmp
+│   └── portable.iss
+├── ai-security-2.0.0.jar
+├── icon.ico
+├── splash.bmp
+└── portable.iss
+```
+
+
+
+
+
+Step 1: Build Your C# Project First
+bash
+
+
+# Navigate to your C# project folder
+
+cd AISecurityLauncher
+
+# First, restore packages and build
+
+dotnet restore
+
+dotnet build -c Release
+
+# Now publish
+
+dotnet publish -c Release -r win-x64 --self-contained false /p:PublishSingleFile=true
+```
+
+After this, you should see:
+```
+AISecurityLauncher/
+├── Program.cs
+├── AISecurityLauncher.csproj
+├── bin/                    ← NOW EXISTS!
+│   └── Release/
+│       └── net10.0-windows/
+│           └── win-x64/
+│               └── publish/
+│                   └── launcher.exe  ← YOUR FILE!
+├── obj/                    ← NOW EXISTS!
+└── ...
+
+
+
+
+Final Manual Steps:
+
+If you prefer doing it manually:
+
+1. Build the launcher:
+bash
+
+   cd AISecurityLauncher
+   
+   dotnet publish -c Release -r win-x64 --self-contained false /p:PublishSingleFile=true
+  
+
+2. Check the files exist:
+bash
+
+   dir "AISecurityLauncher\bin\Release\net10.0-windows\win-x64\publish\"
+  
+   Should show `launcher.exe`
+
+3. Create Output folder and copy everything manually:
+
+## Common Issues & Solutions:
+
+1. "dotnet command not found": Install .NET 10.0 SDK
+
+2. "TargetFramework not found": Check your `.csproj` file has `net10.0-windows`
+
+3. No `publish` folder: Run `dotnet publish` not just `dotnet build`
+
+
+## Quick Test:
+bash
+
+
+# Just test the build
+cd AISecurityLauncher
+dotnet build
+# If this works, then:
+dotnet publish -c Release -r win-x64
+```
+
+
+The `bin/` and `obj/` folders will be created automatically when you build. 
+
+If they still don't appear after `dotnet build`, there might be an error
+, in your `.csproj` file or Program.cs.
+
+
+
+
+# Complete build script for PowerShell #################################################
+
+
+TO FIX THE SPLASH, ICON AND EVERYTHING ELSE RUN THIS FROM ROOT FOLDER - THE BUILD Directory
+
+
+Complete Rebuild Script (save as rebuild.ps1 in ROOT):
+
+# rebuild.ps1 - Run from ROOT folder (where AISecurityLauncher, jre, etc. are)
+param([switch]$NoClean)
+
+Write-Host "=== AI SECURITY MONITOR COMPLETE REBUILD ===" -ForegroundColor Cyan
+Write-Host "Root folder: $PWD" -ForegroundColor Gray
+Write-Host "============================================="
+
+# Step 1: Build C# Launcher with Splash Support
+Write-Host "`n[1/4] Building C# Launcher with splash screen..." -ForegroundColor Green
+
+# Update Program.cs for splash
+$programCs = @'
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Threading;
+using System.Windows.Forms;
+
+namespace AISecurityLauncher;
+
+static class Program
+{
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
+        string appDir = Directory.GetCurrentDirectory();
+        string javaPath = Path.Combine(appDir, "jre", "bin", "java.exe");
+        string jarPath = Path.Combine(appDir, "ai-security-2.0.0.jar");
+        string splashPath = Path.Combine(appDir, "splash.bmp");
+
+        // Show splash immediately
+        if (File.Exists(splashPath))
+        {
+            ShowSplashScreen(splashPath);
+        }
+
+        // Launch Java application
+        if (File.Exists(javaPath) && File.Exists(jarPath))
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = javaPath,
+                Arguments = $"-Xms512m -Xmx1024m -jar \"{jarPath}\"",
+                WorkingDirectory = appDir,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+        }
+        else
+        {
+            MessageBox.Show("Required files not found!\nCheck if jre and jar files exist.",
+                          "AI Security Monitor - Error",
+                          MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        // Keep splash visible for 3 seconds
+        Thread.Sleep(3000);
+        Application.Exit();
+    }
+
+    static void ShowSplashScreen(string imagePath)
+    {
+        Form splash = new()
+        {
+            FormBorderStyle = FormBorderStyle.None,
+            StartPosition = FormStartPosition.CenterScreen,
+            TopMost = true,
+            Size = new Size(640, 480),
+            ShowInTaskbar = false
+        };
+
+        if (File.Exists(imagePath))
+        {
+            splash.BackgroundImage = Image.FromFile(imagePath);
+            splash.BackgroundImageLayout = ImageLayout.Stretch;
+        }
+        else
+        {
+            // Fallback splash
+            splash.BackColor = Color.Navy;
+            using var g = splash.CreateGraphics();
+            g.DrawString("AI Security Monitor", 
+                new Font("Arial", 24, FontStyle.Bold), 
+                Brushes.White, new PointF(50, 200));
+        }
+
+        splash.Show();
+        Application.DoEvents();
+    }
+}
+'@
+
+# Update .csproj for Windows Forms
+$csprojContent = @'
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>launcher</AssemblyName>
+  </PropertyGroup>
+
+</Project>
+'@
+
+Write-Host "Updating C# project files..." -ForegroundColor Yellow
+Set-Content -Path "AISecurityLauncher\Program.cs" -Value $programCs -Encoding UTF8
+Set-Content -Path "AISecurityLauncher\AISecurityLauncher.csproj" -Value $csprojContent -Encoding UTF8
+
+# Build launcher
+cd AISecurityLauncher
+if (!$NoClean) { dotnet clean | Out-Null }
+dotnet publish -c Release -r win-x64 --self-contained false /p:PublishSingleFile=true
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Launcher build failed!" -ForegroundColor Red
+    exit 1
+}
+cd ..
+Write-Host "✓ Launcher built successfully" -ForegroundColor Green
+
+# Step 2: Prepare Output Folder
+Write-Host "`n[2/4] Preparing Output folder..." -ForegroundColor Green
+
+$outputDir = "Output"
+if (Test-Path $outputDir) { Remove-Item $outputDir -Recurse -Force }
+New-Item $outputDir -ItemType Directory | Out-Null
+
+# Copy required files
+$filesToCopy = @{
+    "Launcher" = "AISecurityLauncher\bin\Release\net10.0-windows\win-x64\publish\launcher.exe"
+    "JRE" = "jre"
+    "JAR" = "ai-security-2.0.0.jar"
+    "Icon" = "icon.ico"
+    "Splash" = "splash.bmp"
+}
+
+foreach ($item in $filesToCopy.GetEnumerator()) {
+    if (Test-Path $item.Value) {
+        if ($item.Key -eq "JRE") {
+            Copy-Item $item.Value "$outputDir\jre" -Recurse
+        } else {
+            Copy-Item $item.Value $outputDir
+        }
+        Write-Host "  ✓ $($item.Key)" -ForegroundColor Green
+    } else {
+        Write-Host "  ✗ $($item.Key) - NOT FOUND" -ForegroundColor Red
+        if ($item.Key -eq "JRE" -or $item.Key -eq "JAR") {
+            Write-Host "  CRITICAL FILE MISSING!" -ForegroundColor Red
+            exit 1
+        }
+    }
+}
+
+# Step 3: Create portable.iss in Output
+Write-Host "`n[3/4] Creating installer script..." -ForegroundColor Green
+
+$issContent = @'
+[Setup]
+AppName=AI Security Monitor Portable
+AppVersion=2.0.0
+DefaultDirName={sd}\AISecurityPortable
+DisableDirPage=no
+DisableProgramGroupPage=yes
+DisableWelcomePage=yes
+OutputBaseFilename=AI-Security-Monitor-Portable
+Compression=lzma2/ultra
+SolidCompression=yes
+CreateAppDir=yes
+Uninstallable=no
+PrivilegesRequired=lowest
+WizardImageFile=splash.bmp
+WizardImageStretch=yes
+
+[Files]
+Source: "launcher.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
+Source: "ai-security-2.0.0.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "splash.bmp"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+
+[Icons]
+Name: "{autodesktop}\AI Security Monitor"; Filename: "{app}\launcher.exe"
+Name: "{userprograms}\AI Security Monitor"; Filename: "{app}\launcher.exe"
+
+[Run]
+Filename: "powershell.exe"; Parameters: "-Command ""$shortcut=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath(''Desktop'') + ''\AI Security Monitor.lnk''); $shortcut.TargetPath=''{app}\launcher.exe''; $shortcut.WorkingDirectory=''{app}''; $shortcut.Save()"""; Flags: runhidden
+Filename: "{app}\launcher.exe"; Description: "Launch AI Security Monitor"; Flags: postinstall nowait skipifsilent
+'@
+
+$issContent | Out-File "$outputDir\portable.iss" -Encoding ASCII
+Write-Host "✓ portable.iss created" -ForegroundColor Green
+
+# Step 4: Compile Installer
+Write-Host "`n[4/4] Compiling installer with Inno Setup..." -ForegroundColor Green
+
+$innoPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+if (!(Test-Path $innoPath)) {
+    Write-Host "ERROR: Inno Setup not found!" -ForegroundColor Red
+    Write-Host "Install Inno Setup from: https://jrsoftware.org/isinfo.php" -ForegroundColor Yellow
+    exit 1
+}
+
+cd $outputDir
+& $innoPath "portable.iss"
+cd ..
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "`n=== BUILD SUCCESSFUL! ===" -ForegroundColor Green
+    
+    # Find the installer
+    $installer = Get-ChildItem "$outputDir\*.exe" | Where-Object { $_.Name -like "*AI-Security*" }
+    if ($installer) {
+        Write-Host "`n✅ INSTALLER READY:" -ForegroundColor Cyan
+        Write-Host "   File: $($installer.Name)" -ForegroundColor White
+        Write-Host "   Size: $([math]::Round($installer.Length/1MB, 2)) MB" -ForegroundColor Gray
+        Write-Host "   Path: $($installer.FullName)" -ForegroundColor Gray
+        
+        Write-Host "`n📋 FEATURES INCLUDED:" -ForegroundColor Cyan
+        Write-Host "   • C# Launcher with splash screen" -ForegroundColor White
+        Write-Host "   • Java Runtime (JRE)" -ForegroundColor White
+        Write-Host "   • Desktop & Start Menu shortcuts" -ForegroundColor White
+        Write-Host "   • Portable installation" -ForegroundColor White
+        Write-Host "   • Splash during installation AND app launch" -ForegroundColor White
+        
+        Write-Host "`n🚀 TO DISTRIBUTE:" -ForegroundColor Yellow
+        Write-Host "   Send this single file to users:" -ForegroundColor White
+        Write-Host "   $($installer.FullName)" -ForegroundColor Green
+        
+        # Open folder
+        explorer $outputDir
+    }
+} else {
+    Write-Host "`n❌ INSTALLER COMPILATION FAILED!" -ForegroundColor Red
+    Write-Host "Check Output\portable.iss for errors" -ForegroundColor Yellow
+}
+
+Write-Host "`n============================================="
+pause
+
+
+
+
+
+Keep the source files for future builds. 
+
+Here's what you should and shouldn't delete:
+
+DO NOT DELETE:
+
+
+BUILD/  (Your root folder)
+├── AISecurityLauncher/    ← KEEP (C# source code for launcher)
+├── jre/                   ← KEEP (Java Runtime - needed for future builds)
+├── ai-security-2.0.0.jar  ← KEEP (Your Java app)
+├── icon.ico               ← KEEP (Icon file)
+└── portable.iss           ← KEEP (Inno Setup script template)
+```
+
+
+## YOU CAN DELETE:
+
+- Old/backup files you don't need anymore
+
+- Test folders you created (like `TestLauncher\`)
+
+- Temporary files
+
+## Correct Cleanup:
+powershell
+
+
+# These are safe to delete if they exist:
+
+Remove-Item "TestLauncher" -Recurse -Force -ErrorAction SilentlyContinue
+
+Remove-Item "*.tmp" -ErrorAction SilentlyContinue
+
+Remove-Item "*.log" -ErrorAction SilentlyContinue
+
+Remove-Item "*.bak" -ErrorAction SilentlyContinue
+
+# DO NOT DELETE these - they're your source files:
+
+# - AISecurityLauncher/ (C# project)
+# - jre/ (Java)
+# - ai-security-2.0.0.jar
+# - icon.ico
+# - portable.iss
+```
+
+## Why Keep the Source Files?
+
+1. For updates: If you need to update to version 2.0.1 later
+
+2. For debugging: If users report issues
+
+3. For rebuilding: If you need to make changes to the launcher
+
+4. For distribution: You have the complete source
+
+## Your Final Folder Structure Should Be:
+```
+
+
+BUILD/  (Keep this as your "project folder")
+├── AISecurityLauncher/    ← C# source (KEEP)
+│   ├── Program.cs
+│   ├── AISecurityLauncher.csproj
+│   └── bin/ (can be deleted but will regenerate)
+├── jre/                   ← Java Runtime (KEEP)
+├── Output/                ← Your final installer + files (KEEP)
+│   ├── AI-Security-Monitor-Portable.exe  ← FINAL INSTALLER
+│   ├── launcher.exe
+│   ├── jre/
+│   ├── ai-security-2.0.0.jar
+│   ├── icon.ico
+│   └── portable.iss
+├── ai-security-2.0.0.jar  ← Original JAR (KEEP)
+├── icon.ico               ← Original icon (KEEP)
+└── portable.iss           ← Original ISS script (KEEP)
+```
+
+
+What to Do Instead:
+
+
+If you want to clean up but keep everything working:
+powershell
+
+# 1. Keep Output folder with your final installer
+
+# 2. Archive/backup the source files if you want to save space
+
+# 3. Or just leave everything as-is (a few MB won't hurt)
+
+
+# Safe cleanup script:
+Write-Host "Safe cleanup..." -ForegroundColor Yellow
+
+# Delete temporary build artifacts (safe)
+Remove-Item "AISecurityLauncher\bin" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "AISecurityLauncher\obj" -Recurse -Force -ErrorAction SilentlyContinue
+
+# Delete test folders
+Remove-Item "TestLauncher" -Recurse -Force -ErrorAction SilentlyContinue
+
+# Keep Output, jre, and all source files
+
+Write-Host "`n✅ KEEP THESE FILES:" -ForegroundColor Green
+Write-Host "   - AISecurityLauncher/ (C# source)" -ForegroundColor White
+Write-Host "   - jre/ (Java Runtime)" -ForegroundColor White
+Write-Host "   - ai-security-2.0.0.jar" -ForegroundColor White
+Write-Host "   - icon.ico" -ForegroundColor White
+Write-Host "   - portable.iss" -ForegroundColor White
+Write-Host "   - Output/ (your final installer)" -ForegroundColor White
+
+Write-Host "`nYour installer is ready in: Output\" -ForegroundColor Cyan
+explorer "Output"
+```
+
+
+
+If You Really Want to Minimize:
+
+
+Keep only these ESSENTIAL files:
+
+1. `Output\` folder (contains everything users need)
+
+2. `portable.iss` (template for rebuilding)
+
+3. `AISecurityLauncher\` (source code - optional but recommended)
+
+
+You can delete after successful build:
+
+- `AISecurityLauncher\bin\` and `obj\` (will regenerate)
+
+- Any `*.pdb` files (debug symbols)
+
+- Old backup folders
+
+
+Keep your `Output` folder with the installer, and keep the source files somewhere safe, 
+(even if archived). Don't delete the files in the root folder - they're your build system!
+
+
+Reuse the same `portable.iss` file for multiple .jar files. 
+
+1. Keep Portable.iss as a Template:
+
+Keep the `portable.iss` in root as a template, for each new .jar:
+innosetup
+
+
+[Setup]
+AppName=AI Security Monitor Portable
+AppVersion=2.0.0
+DefaultDirName={sd}\AISecurityPortable
+DisableDirPage=no
+DisableProgramGroupPage=yes
+DisableWelcomePage=yes
+OutputBaseFilename=AI-Security-Monitor-Portable
+Compression=lzma2/ultra
+SolidCompression=yes
+CreateAppDir=yes
+Uninstallable=no
+PrivilegesRequired=lowest
+WizardImageFile=splash.bmp
+WizardImageStretch=yes
+
+[Files]
+Source: "launcher.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
+Source: "ai-security-2.0.0.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "splash.bmp"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+
+[Icons]
+Name: "{autodesktop}\AI Security Monitor"; Filename: "{app}\launcher.exe"
+Name: "{userprograms}\AI Security Monitor"; Filename: "{app}\launcher.exe"
+
+[Run]
+Filename: "powershell.exe"; Parameters: "-Command ""$shortcut=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath(''Desktop'') + ''\AI Security Monitor.lnk''); $shortcut.TargetPath=''{app}\launcher.exe''; $shortcut.WorkingDirectory=''{app}''; $shortcut.Save()"""; Flags: runhidden
+Filename: "{app}\launcher.exe"; Description: "Launch AI Security Monitor"; Flags: postinstall nowait skipifsilent
+```
+
+
+
+
+Simple Reuse Process:
+
+Better: Make it Generic:
+
+Create a generic launcher that looks for any .jar:
+
+
+Generic Program.cs:
+csharp
+
+
+
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+
+namespace GenericLauncher;
+
+class Program
+{
+    static void Main()
+    {
+        string appDir = Directory.GetCurrentDirectory();
+        string javaPath = Path.Combine(appDir, "jre", "bin", "java.exe");
+        
+        // Find first .jar file in the directory
+        var jarFiles = Directory.GetFiles(appDir, "*.jar");
+        if (jarFiles.Length == 0)
+        {
+            ShowError("No .jar file found in application directory!");
+            return;
+        }
+        
+        string jarPath = jarFiles[0];  // Use first .jar found
+        
+        if (File.Exists(javaPath) && File.Exists(jarPath))
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = javaPath,
+                Arguments = $"-Xms512m -Xmx1024m -jar \"{Path.GetFileName(jarPath)}\"",
+                WorkingDirectory = appDir,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+        }
+    }
+    
+    static void ShowError(string message)
+    {
+        // Simple error display
+        System.Console.WriteLine("Error: " + message);
+        System.Console.ReadKey();
+    }
+}
+```
+
+
+Automation Script for Multiple Apps:
+
+
+Create `build-for-app.ps1`:
+powershell
+
+
+param(
+    [string]$AppName,
+    [string]$JarFile,
+    [string]$IconFile = "icon.ico",
+    [string]$Version = "1.0.0"
+)
+
+Write-Host "Building installer for: $AppName" -ForegroundColor Cyan
+
+# 1. Create ISS from template
+$issTemplate = Get-Content "portable.iss" -Raw
+$issTemplate = $issTemplate -replace 'AppName=.*', "AppName=$AppName"
+$issTemplate = $issTemplate -replace 'AppVersion=.*', "AppVersion=$Version"
+$issTemplate = $issTemplate -replace 'OutputBaseFilename=.*', "OutputBaseFilename=$AppName-Portable"
+$issTemplate = $issTemplate -replace 'DefaultDirName=.*', "DefaultDirName={sd}\$AppName"
+$issTemplate = $issTemplate -replace 'ai-security-2.0.0.jar', $JarFile
+
+$issTemplate | Out-File "portable-$AppName.iss" -Encoding ASCII
+
+# 2. Build launcher (use generic launcher)
+# (Build once, reuse for all apps if using generic launcher)
+
+# 3. Create output folder
+$outputDir = "Output-$AppName"
+Remove-Item $outputDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item $outputDir -ItemType Directory | Out-Null
+
+# 4. Copy files
+Copy-Item "AISecurityLauncher\bin\Release\net10.0-windows\win-x64\publish\launcher.exe" "$outputDir\"
+Copy-Item "jre" "$outputDir\jre" -Recurse
+Copy-Item $JarFile "$outputDir\"
+Copy-Item $IconFile "$outputDir\icon.ico" -ErrorAction SilentlyContinue
+Copy-Item "portable-$AppName.iss" "$outputDir\portable.iss"
+
+# 5. Compile
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$outputDir\portable.iss"
+
+Write-Host "`n✅ $AppName installer ready in: $outputDir\" -ForegroundColor Green
+...
+
+
+Usage:
+
+powershell
+
+.\build-for-app.ps1 -AppName "MyApp" -JarFile "myapp-1.0.jar" -IconFile "myapp.ico"
+
+
+Folder Structure for Multiple Apps:
+
+Projects/
+├── BuildSystem/                    (Your reusable build system)
+│   ├── AISecurityLauncher/        (Generic C# launcher)
+│   ├── jre/                       (Shared Java Runtime)
+│   └── portable.iss               (Template)
+│
+├── App1/                          (Project 1)
+│   ├── app1.jar
+│   ├── app1.ico
+│   └── Output-App1/              (Final installer)
+│
+├── App2/                          (Project 2)
+│   ├── app2.jar
+│   ├── app2.ico
+│   └── Output-App2/              (Final installer)
+└── ...
+
+
+
+Quick Manual Method:
+
+
+For each new .jar:
+
+1. Copy your working `portable.iss`
+
+2. Edit 4 lines (AppName, OutputBaseFilename, JAR name, maybe icon)
+
+3. Copy launcher.exe (same for all if using generic launcher)
+
+4. Copy JRE (same for all)
+
+5. Copy new .jar file
+
+6. Compile
+
+
+The JRE and C# launcher can be the same for all your Java apps. 
+
+Just update the ISS template for each app.
+
+
+
+
+
+

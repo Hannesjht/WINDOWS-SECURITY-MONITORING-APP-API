@@ -1,0 +1,154 @@
+Testing the appname.EXE:
+
+Test Cases:
+
+1. Double-click test: Simply double-click the .exe
+
+2. Command line test: `"AI Security Monitor.exe" --help` (if you add CLI support)
+
+3. Missing Java test: Move/rename the JRE folder to test error messages
+
+4. Memory test: Run for extended period to check for memory leaks
+
+5. Multiple instances test: Try opening twice (should prevent if single instance is enabled)
+
+
+Create a Test Script (`test-exe.bat`):
+
+
+@echo off
+echo Testing AI Security Monitor.exe...
+echo.
+
+echo 1. Testing file existence...
+if not exist "AI Security Monitor.exe" (
+    echo ERROR: .exe not found!
+    pause
+    exit /b 1
+)
+
+echo 2. Testing Java dependency...
+echo.
+echo WARNING: This test will temporarily rename the JRE folder...
+if exist jre (
+    ren jre jre_backup_test
+    echo Running without JRE...
+    start "" "AI Security Monitor.exe"
+    timeout /t 5
+    ren jre_backup_test jre
+) else (
+    echo No JRE folder found, testing with system Java...
+    start "" "AI Security Monitor.exe"
+)
+
+echo.
+echo 3. Testing with JRE...
+start "" "AI Security Monitor.exe"
+
+echo.
+echo Tests completed. Check that both instances show proper error messages.
+echo.
+pause
+```
+
+
+Troubleshooting Common Issues:
+
+Issue 1: "Could not find the main class"
+
+Solution: 
+
+- Check main class name in config: `com.security.Main`
+
+- Verify JAR contains the class: `jar tf ai-security-2.0.0.jar | findstr Main.class`
+
+
+Issue 2: "Java not found" when JRE is present:
+
+Solution:
+
+- Ensure JRE folder structure: `jre\bin\java.exe`
+
+- Check JRE version is 17+
+
+- Test manually: `jre\bin\java.exe -version`
+
+
+Issue 3: .exe crashes silently
+
+Solution:
+
+- Add debug options: `-Dlaunch4j.debug=true -Dlaunch4j.dump=true`
+
+- Check Windows Event Viewer for crash logs
+
+- Create a log file redirect in batch file
+
+
+Issue 4: Icon not showing:
+
+Solution:
+
+- Ensure icon is .ico format (not .png renamed)
+
+- Multiple sizes in icon (16x16, 32x32, 48x48, 256x256)
+
+- Use icon editing software to create proper .ico
+
+
+11. Final Distribution Package:
+
+Create this structure for distribution:
+
+
+```
+AI Security Monitor v2.0 (Portable)/
+├── AI Security Monitor.exe          # Launch4j executable
+├── ai-security-2.0.0.jar          # Your application
+├── jre/                           # Embedded Java (optional)
+│   ├── bin/
+│   ├── lib/
+│   └── ...
+├── logs/                          # Auto-created logs folder
+├── README.txt                     # Instructions
+└── launch.bat                     # Alternative launcher
+```
+
+README.txt:
+```
+
+AI SECURITY MONITOR v2.0
+========================
+
+SYSTEM REQUIREMENTS:
+- Windows 7/8/10/11 (64-bit recommended)
+- 2GB RAM minimum
+- 100MB free disk space
+- Network access for monitoring
+
+QUICK START:
+1. Double-click "AI Security Monitor.exe"
+2. If Java error appears, install Java 17+ from:
+   https://adoptium.net/
+3. Click "Start Monitoring" in the application
+
+FEATURES:
+✓ Real-time network monitoring
+✓ AI-powered threat detection  
+✓ Port scanning capabilities
+✓ Threat intelligence lookup
+✓ Professional GUI interface
+✓ Database logging
+
+TROUBLESHOOTING:
+- If .exe doesn't run, try launch.bat
+- Check logs folder for error details
+- Ensure no firewall is blocking the app
+
+SUPPORT:
+For issues, check the application logs
+```
+
+
+
+Continue:  Quick Fix Checklist:

@@ -1,0 +1,321 @@
+Launch4j....................
+
+Download the latest version from: http://launch4j.sourceforge.net/
+
+Prepare project Files:
+
+Create the folder structure:
+
+C:\Users\path\AI-Security-Exe\
+├── ai-security-2.0.0.jar     # Your main JAR file
+├── icon.ico                  # Application icon (optional)
+├── jre\                      # Optional: embedded JRE
+└── config.xml                # Launch4j configuration
+```
+
+Create an Application Icon:
+
+You can create an .ico file using:
+
+Or use a PowerShell command to create a basic icon:
+
+# Save this as create-icon.ps1 and run it:
+
+Add-Type -AssemblyName System.Drawing
+# Create a simple icon (shield + network)
+$bitmap = New-Object System.Drawing.Bitmap(256, 256)
+$graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+
+# Draw background
+$graphics.Clear([System.Drawing.Color]::FromArgb(30, 30, 46))
+
+# Draw shield
+$shieldBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(46, 204, 113))
+$graphics.FillEllipse($shieldBrush, 50, 50, 156, 156)
+
+# Draw network lines
+$pen = New-Object System.Drawing.Pen([System.Drawing.Color]::White, 8)
+$graphics.DrawLine($pen, 128, 70, 128, 186)
+$graphics.DrawLine($pen, 70, 128, 186, 128)
+$graphics.DrawEllipse($pen, 70, 70, 116, 116)
+
+# Save as ICO
+$iconStream = New-Object System.IO.MemoryStream
+$bitmap.Save($iconStream, [System.Drawing.Imaging.ImageFormat]::Png)
+$icon = [System.Drawing.Icon]::FromHandle(([System.Drawing.Bitmap]::FromStream($iconStream)).GetHicon())
+$iconStream.Dispose()
+
+# Save to file
+$iconStream2 = New-Object System.IO.MemoryStream
+$icon.Save($iconStream2)
+[System.IO.File]::WriteAllBytes("icon.ico", $iconStream2.ToArray())
+$iconStream2.Dispose()
+
+Write-Host "Created icon.ico" -ForegroundColor Green
+```
+
+Or download a pre-made icon from:
+
+- https://www.iconarchive.com/ (search "security shield")
+
+- https://www.flaticon.com/ (free icons)
+
+
+Or create an Launch4j Configuration File:
+
+Create `config.xml` in your folder:
+
+Manually add info and save settings as .xml.
+
+
+Using the Launch4j GUI:
+
+Basic Tab:
+   
+   Output file: C:\Users\path\AI Security Monitor.exe
+   
+   Jar: C:\Users\path\ai-security-2.0.0.jar
+   
+   Icon: C:\Users\path\AI-Security-Exe\icon.ico   Line -- 409 current file:
+   
+   Don't wrap the jar: ☐ (unchecked)
+    
+Java required:.
+
+   Update Java:..
+
+   Download From:...  
+
+https://www.java.com/en/download/
+  
+Header type: GUI
+   
+   
+Classpath Tab:
+    
+   Main class: com.security.Main
+   
+   Classpath: Click "Add" → Select ai-security-2.0.0.jar
+  
+  
+RE Tab (Most Important!):  
+	
+Min JRE version:          17
+   
+Max JRE version:          (leave empty)
+   
+JRE path:                 jre
+   
+☐ Requires JDK           (unchecked)
+   
+☐ Requires 64-bit        (unchecked if you want both 32/64-bit)
+   
+Initial heap size (MB):   512
+   
+Max heap size (MB):       1024
+   
+   
+Options:  JVM Options:      Note...  See:  JVM options.txt
+    
+-Dfile.encoding=UTF-8   
+-XX:+UseG1GC
+-XX:+UseStringDeduplication
+-Dsun.java2d.d3d=false
+-Dsun.java2d.noddraw=true
+-Xms512m
+-Xmx2048m                    
+   
+
+Version Info Tab:
+      
+   File version:             2.0.0.0
+ 
+   File description:         AI Security Monitor with Machine Learning Threat Detection
+   
+   Copyright:                © 2025 Security Systems. All rights reserved.
+  
+   Product name:             AI Security Monitor
+   
+   Company name:             © 2025 Vorster Security Micro Systems
+   
+   Internal name:            AISecMon
+   
+   Original filename:        AISecurityMonitor.exe
+   
+   Product version:          2.0.0.0
+   
+   Free form: 2.0.0.2025     or  2.0.0 Build 2025-12-27
+   
+   
+What to Put in "Free form" Field:
+
+In the Version Info tab, you have these fields:
+
+
+File version: 2.0.0.0
+Txt file version: 2.0.0
+File description: AI Security Monitor
+Copyright: © 2025 Your Name
+Product version: 2.0.0.0
+Txt product version: 2.0.0
+Product name: AI Security Monitor
+Company name: Your Company
+Internal name: AISecMon
+Original filename: AISecurityMonitor.exe
+
+
+Correct Values to Use:  
+
+For your AI Security Monitor, use:
+
+Option 1 (Simple):
+
+Free form: 2.0.0      
+
+
+Option 2 (With build info):
+
+Free form: 2.0.0.2025
+
+
+Option 3 (Release candidate):
+
+Free form: 2.0.0.RC1
+
+
+Option 4 (Full version):
+
+Free form: Version 2.0.0 Build 2025-12-27
+
+
+Complete Version Info Setup:
+
+Here's what ALL version fields should look like:
+
+
+File version: 2.0.0.0
+
+Txt file version: 2.0.0
+
+File description: AI Security Monitor with ML Threat Detection
+
+Copyright: © 2025 Security Systems
+
+Product version: 2.0.0.0
+
+Txt product version: 2.0.0
+
+Product name: AI Security Monitor
+
+Company name: Security Systems
+
+Internal name: AISecMon
+
+Original filename: AISecurityMonitor.exe
+
+
+Free form: 2.0.0.2025
+
+Language: Select "English (United States) [0x0409]"
+
+Charset: Select "Unicode (UTF-16) [0x04B0]"
+
+Common Version Formats for "Free form":
+
+- `2.0.0` (Simple version)
+- `v2.0.0` (With v prefix)
+- `2.0.0.2025` (With year)
+- `2.0.0.Build127` (With build number)
+- `Release 2.0.0` (With release text)
+- `Version 2.0` (Simplified)
+
+
+If You Don't Want Version Info:
+
+Simply uncheck the "Enable version info". 
+ 
+     
+Messages Tab:
+     
+   Startup error: An error occurred while starting the application.
+   
+   JRE not found error: (use the detailed message from XML above)   Line -- 1377 + current file:
+   
+   JRE version error: (use the detailed message from XML above)
+   
+   Launcher error: The launcher was unable to create the application.
+   
+
+Single Instance Tab (Optional):
+     
+   ☑ Allow only a single instance of the application
+   
+   Mutex name: AI_Security_Monitor_Mutex
+   
+   Window title: AI Security Monitor
+   
+
+Environment Tab (Optional):
+    
+   (Leave as default unless you need specific environment variables)
+   
+   
+6. Building the .EXE:
+
+Method A: Using GUI
+
+Fill in all tabs as above
+
+Click the Build wrapper button (gear icon)
+
+Wait for "Building finished successfully" message
+
+Your .exe is now in the output directory
+
+
+
+Step 1: Rename the JRE Folder: ( `jdk-17.0.17+10-jre` )
+
+The folder should be exactly named   `jre`   (not `jdk-17.0.17+10-jre`):
+
+1. Go to: `C:\Users\path\`
+
+2. The structure should be:
+
+For final distribution, create this Portable Distribution Structure:
+
+AI Security Monitor (Portable)/
+
++-- AI Security Monitor.exe    # Launch4j executable
++-- ai-security-2.0.0.jar      # Your app
++-- jre/                       # Java runtime (rename your folder to this)
+¦   +-- bin/
+¦   ¦   +-- java.exe
+¦   ¦   +-- ...
+¦   +-- lib/
++-- splash.bmp                 # Optional splash
++-- icon.ico                   # App icon
++-- logs/                      # Auto-created
++-- launch.bat                 # Backup launcher
++-- README.txt                 # Instructions
+```
+
+
+2. Extract to your folder:
+   
+C:\Users\path\AI-Security-Exe\jre\
+  
+  
+3. In Launch4j JRE tab:
+   
+JRE path: jre
+   
+Bundled JRE path: .\jre
+   
+
+8. Advanced Features:
+
+Custom Splash Screen:  ( See Creating Splash Screen: )
+
+
+Continue:  Testing the .EXE
